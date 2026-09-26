@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Interactive Gradient Page</title>
+  <title>Interactive Page</title>
   <style>
-    /* Reset margins and ensure the body covers the full viewport height */
     * {
       box-sizing: border-box;
       margin: 0;
@@ -15,61 +14,312 @@
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
       min-height: 100vh;
+      width: 100vw;
+      overflow: hidden; /* Prevents scrollbars as elements move or fade */
+      background: linear-gradient(180deg, #1e3c72 0%, #2a5298 60%, #6dd5ed 100%);
+      position: relative;
       display: flex;
+      flex-direction: column;
       justify-content: center;
       align-items: center;
-      /* Blue to white linear gradient */
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #ffffff 100%);
-      color: #333;
     }
 
-    .container {
+    /* Top Birthday Header Styling */
+    .birthday-header {
+      position: absolute;
+      top: 60px;
+      color: #ffffff;
+      font-size: 2.2rem;
+      font-weight: 700;
       text-align: center;
-      padding: 20px;
+      opacity: 0;
+      transform: translateY(-20px);
+      pointer-events: none;
+      transition: opacity 2s ease-in-out, transform 2s ease-in-out;
+      z-index: 2;
+      text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
-    /* Styled rounded-edge button */
+    .birthday-header.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    /* Styled rounded-edge button with absolute positioning for smooth movements */
     .interactive-btn {
+      position: absolute;
       background-color: #ffffff;
       color: #1e3c72;
       font-size: 1.2rem;
       font-weight: 600;
       padding: 16px 32px;
       border: none;
-      border-radius: 50px; /* Gives smooth rounded edges */
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+      border-radius: 50px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
       cursor: pointer;
-      transition: all 0.3s ease;
+      opacity: 1;
+      /* Smooth transitions for positions and fading out */
+      transition: top 0.6s cubic-bezier(0.25, 1, 0.5, 1), 
+                  left 0.6s cubic-bezier(0.25, 1, 0.5, 1), 
+                  transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+                  opacity 1s ease,
+                  background-color 0.3s ease, 
+                  box-shadow 0.3s ease;
       outline: none;
+      white-space: nowrap;
+      z-index: 2;
     }
 
-    /* Hover and active effects */
+    /* Class added when main button disappears over 1 second */
+    .interactive-btn.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* Step 0: Initial Center Position */
+    .pos-0 {
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Step 1: Top Right */
+    .pos-1 {
+      top: 80px;
+      left: calc(100% - 80px);
+      transform: translate(-100%, 0);
+    }
+
+    /* Step 2: Top Left */
+    .pos-2 {
+      top: 80px;
+      left: 80px;
+      transform: translate(0, 0);
+    }
+
+    /* Step 3: Middle Right */
+    .pos-3 {
+      top: 50%;
+      left: calc(100% - 80px);
+      transform: translate(-100%, -50%);
+    }
+
+    /* Step 4: Middle Left */
+    .pos-4 {
+      top: 50%;
+      left: 80px;
+      transform: translate(0, -50%);
+    }
+
+    /* Step 5: Bottom Middle Right */
+    .pos-5 {
+      top: calc(100% - 100px);
+      left: 70%;
+      transform: translate(-50%, -100%);
+    }
+
     .interactive-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.3);
       background-color: #f8f9fa;
     }
 
     .interactive-btn:active {
-      transform: translateY(1px);
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Final Paragraph Styling */
+    .final-paragraph {
+      position: absolute;
+      width: 80%;
+      max-width: 700px;
+      color: #ffffff;
+      font-size: 1.3rem;
+      line-height: 1.8;
+      text-align: center;
+      opacity: 0;
+      transform: translateY(-30px);
+      pointer-events: none;
+      /* Fades in over 10s, fades out over 1s */
+      transition: opacity 10s ease-out, transform 10s ease-out;
+      z-index: 1;
+    }
+
+    .final-paragraph.visible {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .final-paragraph.fade-out {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 1s ease, transform 1s ease;
+      pointer-events: none;
+    }
+
+    /* Small Next Button */
+    .next-btn {
+      position: absolute;
+      bottom: 40px;
+      right: 50px;
+      background-color: #ffffff;
+      color: #1e3c72;
+      font-size: 0.95rem;
+      font-weight: 600;
+      padding: 10px 22px;
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+      cursor: pointer;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 1s ease, transform 0.3s ease, background-color 0.3s ease;
+      z-index: 3;
+    }
+
+    .next-btn.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .next-btn:hover {
+      background-color: #f8f9fa;
+      transform: translateY(-2px);
+    }
+
+    .next-btn.fade-out {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease;
+    }
+
+    /* Image Gallery / Placeholder Gallery */
+    .image-container {
+      position: absolute;
+      top: 55%;
+      transform: translateY(-50%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      width: 85%;
+      max-width: 900px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 2s ease-in-out;
+      z-index: 1;
+    }
+
+    .image-container.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .image-container img {
+      width: 30%;
+      height: auto;
+      max-height: 350px;
+      object-fit: cover;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <button id="messageBtn" class="interactive-btn">
-      I know you have a lot going on....
-    </button>
+  <!-- Top Header Text (appears after Next is clicked) -->
+  <h1 id="birthdayHeader" class="birthday-header">Happy Birthday Olivia, My Love</h1>
+
+  <!-- Main interactive moving button -->
+  <button id="messageBtn" class="interactive-btn pos-0">
+    I know you have a lot going on....
+  </button>
+
+  <!-- Big paragraph -->
+  <p id="finalParagraph" class="final-paragraph">
+    You've written me plenty of notes and cards in the past so I guess its my turn.
+    I'm writing this as the sad news comes, and I know you're gonne think that your birthday is a bad omen
+    or something, but I want to think of it as a reminder of something special or a bright spot during a time of difficulty.
+    I know a lot is uncertain - how will nursing be, will felix ever get a real job, will we name our dog mortis - 
+    but I've never felt better about uncertainty than with you. You've made my world so much brighter and fuller, I
+    hope you can take today to appreciate yourself, and my reminder to you of how much I love you. 
+    And now, here are some fun pictures!
+  </p>
+
+  <!-- Small Next Button -->
+  <button id="nextBtn" class="next-btn">
+    Next →
+  </button>
+
+  <!-- Placeholder Image Gallery -->
+  <div id="imageGallery" class="image-container">
+    <img src="https://via.placeholder.com/400x300/ffffff/1e3c72?text=Image+1" alt="Placeholder 1">
+    <img src="https://via.placeholder.com/400x300/ffffff/1e3c72?text=Image+2" alt="Placeholder 2">
+    <img src="https://via.placeholder.com/400x300/ffffff/1e3c72?text=Image+3" alt="Placeholder 3">
   </div>
 
   <script>
-    const button = document.getElementById('messageBtn');
+    const messageBtn = document.getElementById('messageBtn');
+    const paragraph = document.getElementById('finalParagraph');
+    const nextBtn = document.getElementById('nextBtn');
+    const imageGallery = document.getElementById('imageGallery');
+    const birthdayHeader = document.getElementById('birthdayHeader');
 
-    button.addEventListener('click', () => {
-      // Changes the text once clicked
-      button.textContent = "Take a deep breath. You're doing great.";
+    // Sequence of messages paired with each step position
+    const steps = [
+      { text: "I know you have a lot going on....", class: "pos-0" },
+      { text: "And sometimes its not easy", class: "pos-1" },
+      { text: "So when there is something good to celebrate, you should take it", class: "pos-2" },
+      { text: "The dark irony of the situation is...obvious", class: "pos-3" },
+      { text: "but seriously...I want you to be proud of yourself", class: "pos-4" },
+      { text: "You're you, and that will always be the thing I admire the most", class: "pos-5" }
+    ];
+
+    let currentStep = 0;
+
+    messageBtn.addEventListener('click', () => {
+      if (currentStep < steps.length - 1) {
+        // Move main button to next position
+        messageBtn.classList.remove(steps[currentStep].class);
+        currentStep++;
+        messageBtn.classList.add(steps[currentStep].class);
+        messageBtn.textContent = steps[currentStep].text;
+      } else {
+        // Final click at pos-5:
+        // 1. Fade out main button over 1 second
+        messageBtn.classList.add('fade-out');
+
+        setTimeout(() => {
+          messageBtn.style.display = 'none';
+          
+          // 2. Paragraph fades in over 10 seconds
+          paragraph.classList.add('visible');
+
+          // 3. Exactly 10 seconds after paragraph forms, show the "Next" button
+          setTimeout(() => {
+            nextBtn.classList.add('visible');
+          }, 10000);
+
+        }, 1000);
+      }
+    });
+
+    // Handle "Next" button click
+    nextBtn.addEventListener('click', () => {
+      // 1. Fade out the Next button and the paragraph
+      nextBtn.classList.add('fade-out');
+      paragraph.classList.add('fade-out');
+
+      // 2. Once paragraph finishes fading out (1 second), show the header and images
+      setTimeout(() => {
+        paragraph.style.display = 'none';
+        nextBtn.style.display = 'none';
+        
+        // 3. Fade in header and images, staying on screen
+        birthdayHeader.classList.add('visible');
+        imageGallery.classList.add('visible');
+      }, 1000);
     });
   </script>
 
